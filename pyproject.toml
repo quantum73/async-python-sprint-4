@@ -1,0 +1,54 @@
+[tool.mypy]
+exclude = [
+    'venv',
+    '.venv',
+    '.github',
+    'env',
+    '.env',
+    'tests',
+]
+plugins = [
+    "sqlalchemy.ext.mypy.plugin",
+    "pydantic.mypy",
+]
+ignore_missing_imports = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+addopts = "--strict-markers --tb=short -s -v -p no:cacheprovider"
+
+[tool.coverage.run]
+omit = [
+    "tests/*",
+    "core/*",
+    "__init__.py",
+]
+
+[tool.poetry]
+name = "async-python-sprint-4"
+version = "0.1.0"
+description = ""
+authors = ["Nikita Fomin <fominquant@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.103.2"
+uvicorn = "^0.23.2"
+uvloop = "^0.17.0"
+asyncpg = "^0.28.0"
+sqlalchemy = "^1.4"
+sqlalchemy-utils = "^0.41.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.2"
+pytest-cov = "^4.1.0"
+pytest-asyncio = "^0.21.1"
+mypy = "^1.6.0"
+flake8 = "^6.1.0"
+black = "^23.9.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
