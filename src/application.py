@@ -11,6 +11,7 @@ def create_app() -> FastAPI:
     db = container.db()
 
     fastapi_app = FastAPI(
+        title="URL shortener app",
         docs_url="/api/openapi",
         redoc_url=None,
         openapi_url="/api/openapi.json",

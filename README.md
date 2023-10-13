@@ -13,7 +13,7 @@
 
 1. Получить сокращённый вариант переданного URL.
 
-```python
+```http request
 POST /
 ```
 
@@ -21,7 +21,7 @@ POST /
 
 2. Вернуть оригинальный URL.
 
-```python
+```http request
 GET /<shorten-url-id>
 ```
 
@@ -29,7 +29,7 @@ GET /<shorten-url-id>
 
 3. Вернуть статус использования URL.
 
-```python
+```http request
 GET /<shorten-url-id>/status?[full-info]&[max-result=10]&[offset=0]
 ```
 
@@ -44,9 +44,9 @@ GET /<shorten-url-id>/status?[full-info]&[max-result=10]&[offset=0]
 
 ## Дополнительные требования (отметьте [Х] выбранные пункты):
 
-- [ ] (1 балл) Реализуйте метод `GET /ping`, который возвращает информацию о статусе доступности БД.
+- [x] (1 балл) Реализуйте метод `GET /ping`, который возвращает информацию о статусе доступности БД.
 - [ ] (1 балл) Реализуйте возможность «удаления» сохранённого URL. Запись должна остаться, но помечаться как удалённая. При попытке получения полного URL возвращать ответ с кодом `410 Gone`.
-- [ ] (2 балла) Реализуйте middlware, блокирующий доступ к сервису из запрещённых подсетей (black list).
+- [x] (2 балла) Реализуйте middlware, блокирующий доступ к сервису из запрещённых подсетей (black list).
 - [ ] (2 балла) Реализуйте возможность передавать ссылки пачками (batch upload).
 
 <details>
@@ -54,7 +54,7 @@ GET /<shorten-url-id>/status?[full-info]&[max-result=10]&[offset=0]
 
 - Метод `POST /shorten` принимает в теле запроса список URL в формате:
 
-```python
+```json lines
 [
     {
         "original-url": "<URL-for-shorten>"
@@ -65,7 +65,7 @@ GET /<shorten-url-id>/status?[full-info]&[max-result=10]&[offset=0]
 ```
 ... и возвращает данные в следующем формате:
 
-```python
+```json lines
 [
     {
         "short-id": "<shoten-id>",
