@@ -39,6 +39,15 @@ uvloop = "^0.17.0"
 asyncpg = "^0.28.0"
 sqlalchemy = "^1.4"
 sqlalchemy-utils = "^0.41.1"
+dependency-injector = "^4.41.0"
+orjson = "^3.9.9"
+email-validator = "^2.0.0.post2"
+pydantic-settings = "^2.0.3"
+pyyaml = "^6.0.1"
+python-multipart = "^0.0.6"
+itsdangerous = "^2.1.2"
+pydantic-extra-types = "^2.1.0"
+greenlet = "^3.0.0"
 
 
 [tool.poetry.group.dev.dependencies]
