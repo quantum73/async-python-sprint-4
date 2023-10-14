@@ -19,8 +19,10 @@ addopts = "--strict-markers --tb=short -s -v -p no:cacheprovider"
 
 [tool.coverage.run]
 omit = [
-    "tests/*",
-    "core/*",
+    "src/tests/*",
+    "src/core/*",
+    "src/db/*",
+    "src/schemas/*",
     "__init__.py",
 ]
 
@@ -48,6 +50,7 @@ python-multipart = "^0.0.6"
 itsdangerous = "^2.1.2"
 pydantic-extra-types = "^2.1.0"
 greenlet = "^3.0.0"
+httpx = "^0.25.0"
 
 
 [tool.poetry.group.dev.dependencies]
