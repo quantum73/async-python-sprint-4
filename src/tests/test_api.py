@@ -2,10 +2,10 @@ from unittest import mock
 
 import pytest
 
-from .mocks import mocked_short_url_object
-from ..services.short_url import ShortURLService
+from .mocks import mocked_short_url_object, mocked_not_found_error, mocked_full_short_url_object, \
+    mocked_batch_short_url_objects
 from ..application import app
-from src.schemas import short_url as short_url_schemas
+from ..services.short_url import ShortURLService
 
 API_PREFIX = "/api/v1"
 
@@ -41,29 +41,33 @@ class TestPingDatabase:
             assert response.json() == {"db_is_works": False}
 
 
-# class TestGetShortURLByID:
-#     def test_get_short_url_by_id(self, client):
-#         short_url_repository_mock = mock.Mock(spec=ShortURLRepository)
-#         short_url_repository_mock.get_by_id.return_value = mocked_short_url_object
-#
-#         with app.container.short_url_repository.override(short_url_repository_mock):
-#             response = client.get("/1", allow_redirects=False)
-#
-#         assert response.status_code == 307
-#         assert response.headers["Location"] == "https://example.com/foo/"
-#
-#         short_url_repository_mock.get_by_id.assert_called_once_with("1")
-#
-#     def test_get_short_url_by_not_existed_id(self, client):
-#         short_url_repository_mock = mock.Mock(spec=ShortURLRepository)
-#         short_url_repository_mock.get_by_id.side_effect = mocked_not_found_error
-#
-#         with app.container.short_url_repository.override(short_url_repository_mock):
-#             response = client.get("/1", allow_redirects=False)
-#
-#         assert response.status_code == 410
-#
-#
+class TestGetShortURLByID:
+    def test_get_short_url_by_id(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.get_short_url_by_id.return_value = mocked_short_url_object
+        short_url_service_mock.click_on_short_url.return_value = None
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.get(f"{API_PREFIX}/1", allow_redirects=False)
+
+        assert response.status_code == 307
+        assert response.headers["Location"] == "https://example.com/foo/"
+
+        short_url_service_mock.get_short_url_by_id.assert_called_once_with(short_id="1")
+        short_url_service_mock.click_on_short_url.assert_called_once_with(short_url=mocked_short_url_object)
+
+    def test_get_short_url_by_not_existed_id(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.get_short_url_by_id.side_effect = mocked_not_found_error
+        short_url_service_mock.click_on_short_url.return_value = None
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.get(f"{API_PREFIX}/1", allow_redirects=False)
+
+        assert response.status_code == 410
+        short_url_service_mock.get_short_url_by_id.assert_called_once_with(short_id="1")
+
+
 class TestCreateShortURL:
     def test_create_short_url(self, client):
         short_url_service_mock = mock.Mock(spec=ShortURLService)
@@ -88,90 +92,100 @@ class TestCreateShortURL:
         assert response.status_code == expected_status_code
 
 
-# class TestBatchCreateShortURL:
-#     def test_batch_create_short_url(self, client):
-#         short_url_service_mock = mock.Mock(spec=ShortURLService)
-#         short_url_service_mock.batch_create_short_url.return_value = mocked_batch_short_url_objects
-#
-#         with app.container.short_url_service.override(short_url_service_mock):
-#             response = client.post(
-#                 "/shorten",
-#                 json=[
-#                     {"original_url": "https://example.com/foo/"},
-#                     {"original_url": "https://example.com/foo/"},
-#                 ],
-#             )
-#
-#         assert response.status_code == 201
-#         assert len(response.json()) == 2
-#         short_url_service_mock.batch_create_short_url.assert_called_once()
-#
-#     def test_batch_create_short_url_by_max_batch_size(self, client):
-#         with app.container.config.api.max_batch_size.override(1):
-#             response = client.post(
-#                 "/shorten",
-#                 json=[
-#                     {"original_url": "https://example.com/foo/"},
-#                     {"original_url": "https://example.com/foo/"},
-#                 ],
-#             )
-#         assert response.status_code == 413
-#
-#
-# class TestGetShortURLStatus:
-#     def test_get_short_url_status(self, client):
-#         short_url_repository_mock = mock.Mock(spec=ShortURLRepository)
-#         short_url_repository_mock.get_by_id.return_value = mocked_short_url_object
-#
-#         with app.container.short_url_repository.override(short_url_repository_mock):
-#             response = client.get("/1/status")
-#
-#         assert response.status_code == 200
-#
-#         short_url_repository_mock.get_by_id.assert_called_once_with("1")
-#
-#     def test_get_short_url_status_full(self, client):
-#         short_url_repository_mock = mock.Mock(spec=ShortURLRepository)
-#         short_url_repository_mock.get_by_id.return_value = mocked_full_short_url_object
-#
-#         with app.container.short_url_repository.override(short_url_repository_mock):
-#             response = client.get("/1/status", params={"full-info": True})
-#
-#         assert response.status_code == 200
-#
-#         short_url_repository_mock.get_by_id.assert_called_once_with("1")
-#
-#     def test_get_short_url_by_not_existed_id(self, client):
-#         short_url_repository_mock = mock.Mock(spec=ShortURLRepository)
-#         short_url_repository_mock.get_by_id.side_effect = mocked_not_found_error
-#
-#         with app.container.short_url_repository.override(short_url_repository_mock):
-#             response = client.get("/1/status")
-#
-#         assert response.status_code == 410
-#
-#
-# class TestDeleteShortURL:
-#     def test_delete_short_url(self, client):
-#         short_url_repository_mock = mock.Mock(spec=ShortURLRepository)
-#         short_url_repository_mock.delete.return_value = mocked_short_url_object
-#
-#         with app.container.short_url_repository.override(short_url_repository_mock):
-#             response = client.delete("/1/delete")
-#
-#         assert response.status_code == 204
-#         short_url_repository_mock.delete.assert_called_once()
-#
-#     def test_delete_already_deleted_short_url(self, client):
-#         short_url_repository_mock = mock.Mock(spec=ShortURLRepository)
-#         short_url_repository_mock.get_by_id.side_effect = mocked_not_found_error
-#
-#         with app.container.short_url_repository.override(short_url_repository_mock):
-#             response = client.delete("/1/delete")
-#
-#         assert response.status_code == 410
-#         short_url_repository_mock.get_by_id.assert_called_once()
-#
-#     def test_delete_not_existed_short_url(self, client):
-#         response = client.delete("/73/delete")
-#         assert response.status_code == 410
+class TestBatchCreateShortURL:
+    @pytest.mark.asyncio
+    async def test_batch_create_short_url(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.batch_create_short_urls.return_value = mocked_batch_short_url_objects
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.post(
+                f"{API_PREFIX}/shorten",
+                json=[
+                    {"original_url": "https://example.com/foo/"},
+                    {"original_url": "https://example.com/foo/"},
+                ],
+            )
+
+        assert response.status_code == 201
+        assert len(response.json()) == 2
+        short_url_service_mock.batch_create_short_urls.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_batch_create_short_url_by_max_batch_size(self, client):
+        with app.container.config.api.max_batch_size.override(1):
+            response = client.post(
+                f"{API_PREFIX}/shorten",
+                json=[
+                    {"original_url": "https://example.com/foo/"},
+                    {"original_url": "https://example.com/foo/"},
+                ],
+            )
+        assert response.status_code == 413
+
+
+class TestGetShortURLStatus:
+    @pytest.mark.asyncio
+    async def test_get_short_url_status(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.get_short_url_by_id.return_value = mocked_short_url_object
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.get(f"{API_PREFIX}/1/status")
+
+        assert response.status_code == 200
+
+        short_url_service_mock.get_short_url_by_id.assert_called_once_with(short_id="1")
+
+    @pytest.mark.asyncio
+    async def test_get_short_url_status_full(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.get_short_url_by_id.return_value = mocked_full_short_url_object
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.get(f"{API_PREFIX}/1/status", params={"full-info": True})
+
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["click_count"] == mocked_full_short_url_object.click_count
+        assert data["last_click_at"] == mocked_full_short_url_object.last_click_at.isoformat()
+        short_url_service_mock.get_short_url_by_id.assert_called_once_with(short_id="1")
+
+    @pytest.mark.asyncio
+    async def test_get_short_url_by_not_existed_id(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.get_short_url_by_id.side_effect = mocked_not_found_error
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.get(f"{API_PREFIX}/1/status")
+
+        assert response.status_code == 410
+        short_url_service_mock.get_short_url_by_id.assert_called_once_with(short_id="1")
+
+
+class TestDeleteShortURL:
+    @pytest.mark.asyncio
+    async def test_delete_short_url(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.get_short_url_by_id.return_value = mocked_short_url_object
+        short_url_service_mock.set_short_url_as_delete.return_value = None
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.delete(f"{API_PREFIX}/1/delete")
+
+        assert response.status_code == 204
+        short_url_service_mock.get_short_url_by_id.assert_called_once_with(short_id="1")
+        short_url_service_mock.set_short_url_as_delete.assert_called_once_with(short_url=mocked_short_url_object)
+
+    @pytest.mark.asyncio
+    async def test_delete_already_deleted_short_url(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.get_short_url_by_id.side_effect = mocked_not_found_error
+        short_url_service_mock.set_short_url_as_delete.return_value = None
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.delete(f"{API_PREFIX}/1/delete")
+
+        assert response.status_code == 410
+        short_url_service_mock.get_short_url_by_id.assert_called_once_with(short_id="1")

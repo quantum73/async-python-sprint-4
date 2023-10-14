@@ -19,18 +19,21 @@ class ShortURLInput(ShortURLBase):
     short_id: str = Field(default_factory=get_uuid4)
 
     def model_post_init(self, __context: tp.Any) -> None:
+        path = str(self.short_url.path).strip("/")
         self.short_url = AnyHttpUrl.build(
             scheme=self.short_url.scheme,
             host=self.short_url.host,
-            path=self.short_id,
+            port=self.short_url.port,
+            path=f"{path}/{self.short_id}/",
         )
 
 
-class BatchedShortURLOutput(ShortURLBase):
+class BatchedShortURLOutput(BaseModel):
     short_id: str
+    short_url: AnyHttpUrl
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ShortURLInDBBase(ShortURLBase):
@@ -38,7 +41,7 @@ class ShortURLInDBBase(ShortURLBase):
     short_url: AnyHttpUrl
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ShortURLOutput(ShortURLInDBBase):

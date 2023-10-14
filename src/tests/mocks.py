@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import Request
 
 from src.core.exceptions import ShortURLNotFoundError
@@ -13,6 +15,7 @@ mocked_full_short_url_object = ShortURL(
     short_url="http://127.0.0.1:8000/1/",
     original_url="https://example.com/foo/",
     click_count=0,
+    last_click_at=datetime.now(),
 )
 mocked_batch_short_url_objects = [
     ShortURL(

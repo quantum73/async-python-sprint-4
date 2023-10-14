@@ -103,18 +103,7 @@ class TestServiceSetShortURLAsDelete:
         with app.container.short_url_repository.override(short_url_repository_mock):
             await app.container.short_url_service().set_short_url_as_delete(short_url=mocked_short_url_object)
 
-        short_url_repository_mock.delete.assert_called_once_with(idx="1")
-
-    @pytest.mark.asyncio
-    async def test_set_not_existed_short_url_as_delete(self):
-        short_url_repository_mock = mock.Mock(spec=ShortURLRepository)
-        short_url_repository_mock.delete.side_effect = mocked_not_found_error
-
-        with app.container.short_url_repository.override(short_url_repository_mock):
-            with pytest.raises(ShortURLNotFoundError):
-                await app.container.short_url_service().set_short_url_as_delete(short_url=mocked_short_url_object)
-
-        short_url_repository_mock.delete.assert_called_once_with(idx="1")
+        short_url_repository_mock.delete.assert_called_once_with(short_url_obj=mocked_short_url_object)
 
 
 class TestServiceClickOnShortURL:

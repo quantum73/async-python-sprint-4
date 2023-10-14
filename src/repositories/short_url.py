@@ -64,21 +64,16 @@ class ShortURLRepository(RepositoryProtocol):
             await session.refresh(short_url_obj)
             return short_url_obj
 
-    async def delete(self, *, idx: str) -> None:
+    async def delete(self, *, short_url_obj: ModelType) -> None:
         async with self._session_factory() as session:
-            statement = select(ShortURL).where(ShortURL.short_id == idx)
-            query = await session.execute(statement=statement)
-            short_url = query.scalar_one_or_none()
-            if not short_url:
-                raise ShortURLNotFoundError(idx)
-
-            update_statement = update_(ShortURL).where(ShortURL.short_id == idx).values(is_deleted=True)
+            update_statement = (
+                update_(ShortURL).where(ShortURL.short_id == short_url_obj.short_id).values(is_deleted=True)
+            )
             await session.execute(statement=update_statement)
             await session.commit()
-            await session.refresh(short_url)
 
     async def increase_short_url_click_count(self, *, short_url_obj: ModelType) -> None:
-        with self._session_factory() as session:
+        async with self._session_factory() as session:
             statement = (
                 update_(ShortURL)
                 .where(ShortURL.short_id == short_url_obj.short_id)
@@ -86,4 +81,3 @@ class ShortURLRepository(RepositoryProtocol):
             )
             await session.execute(statement=statement)
             await session.commit()
-            await session.refresh(short_url_obj)
