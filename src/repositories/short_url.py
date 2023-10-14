@@ -24,7 +24,7 @@ class ShortURLRepository(RepositoryProtocol):
 
     async def get(self, *, idx: str) -> ModelType:
         async with self._session_factory() as session:
-            statement = select(ShortURL).where(ShortURL.short_id == idx)
+            statement = select(ShortURL).where(ShortURL.short_id == idx, ~ShortURL.is_deleted)
             query = await session.execute(statement=statement)
             short_url = query.scalar_one_or_none()
             if not short_url:

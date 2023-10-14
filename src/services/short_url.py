@@ -14,6 +14,9 @@ class ShortURLService(ServiceProtocol):
     async def get_short_url_by_id(self, short_id: str) -> ModelType:
         return await self._repository.get(idx=short_id)
 
+    async def get_short_urls(self, *, offset: int, limit: int) -> tp.Sequence[ModelType]:
+        return await self._repository.get_multi(skip=offset, limit=limit)
+
     async def create_short_url(self, *, data_to_create: CreateSchemaType) -> ModelType:
         return await self._repository.create(obj_in=data_to_create)
 

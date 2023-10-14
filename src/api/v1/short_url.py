@@ -58,6 +58,21 @@ async def get_short_url_status(
 
 
 @short_url_router.get(
+    "/shorten-urls",
+    response_model=short_url_schemas.PaginateShortURLOutput,
+    status_code=status.HTTP_200_OK,
+)
+@inject
+async def get_short_urls(
+    offset: tp.Annotated[int, Query()] = 0,
+    max_result: tp.Annotated[int, Query(alias="max-result")] = 10,
+    short_url_service: ShortURLService = Depends(Provide[Container.short_url_service]),
+):
+    data = await short_url_service.get_short_urls(offset=offset, limit=max_result)
+    return short_url_schemas.PaginateShortURLOutput(data=data, offset=offset, limit=max_result)
+
+
+@short_url_router.get(
     "/{url_id}",
     response_class=RedirectResponse,
     status_code=status.HTTP_307_TEMPORARY_REDIRECT,
@@ -92,8 +107,7 @@ async def batch_create_short_url(
 
     base_url = str(request.base_url)
     data_to_create = [
-        short_url_schemas.ShortURLInput(original_url=i.original_url, short_url=base_url)
-        for i in batch_original_urls
+        short_url_schemas.ShortURLInput(original_url=i.original_url, short_url=base_url) for i in batch_original_urls
     ]
     return await short_url_service.batch_create_short_urls(data_to_create=data_to_create)
 

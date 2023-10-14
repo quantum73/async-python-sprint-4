@@ -48,6 +48,12 @@ class ShortURLOutput(ShortURLInDBBase):
     pass
 
 
+class PaginateShortURLOutput(BaseModel):
+    data: tp.Sequence[ShortURLOutput]
+    offset: int
+    limit: int
+
+
 class ShortURLOutputFull(ShortURLInDBBase):
     last_click_at: datetime | None
     click_count: int

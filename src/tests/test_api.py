@@ -2,8 +2,12 @@ from unittest import mock
 
 import pytest
 
-from .mocks import mocked_short_url_object, mocked_not_found_error, mocked_full_short_url_object, \
-    mocked_batch_short_url_objects
+from .mocks import (
+    mocked_short_url_object,
+    mocked_not_found_error,
+    mocked_full_short_url_object,
+    mocked_batch_short_url_objects,
+)
 from ..application import app
 from ..services.short_url import ShortURLService
 
@@ -69,7 +73,8 @@ class TestGetShortURLByID:
 
 
 class TestCreateShortURL:
-    def test_create_short_url(self, client):
+    @pytest.mark.asyncio
+    async def test_create_short_url(self, client):
         short_url_service_mock = mock.Mock(spec=ShortURLService)
         short_url_service_mock.create_short_url.return_value = mocked_short_url_object
 
@@ -87,7 +92,8 @@ class TestCreateShortURL:
             pytest.param(422, {"foo": "https://example.com/foo/"}, id="wrong body field name"),
         ],
     )
-    def test_create_short_url_by_bad_data(self, client, expected_status_code, json_data):
+    @pytest.mark.asyncio
+    async def test_create_short_url_by_bad_data(self, client, expected_status_code, json_data):
         response = client.post(f"{API_PREFIX}/", json=json_data)
         assert response.status_code == expected_status_code
 
@@ -122,6 +128,24 @@ class TestBatchCreateShortURL:
                 ],
             )
         assert response.status_code == 413
+
+
+class TestGetShortURLs:
+    @pytest.mark.asyncio
+    async def test_get_short_urls(self, client):
+        short_url_service_mock = mock.Mock(spec=ShortURLService)
+        short_url_service_mock.get_short_urls.return_value = mocked_batch_short_url_objects
+
+        with app.container.short_url_service.override(short_url_service_mock):
+            response = client.get(f"{API_PREFIX}/shorten-urls")
+
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data["data"]) == 2
+        assert data["offset"] == 0
+        assert data["limit"] == 10
+        short_url_service_mock.get_short_urls.assert_called_once()
 
 
 class TestGetShortURLStatus:
