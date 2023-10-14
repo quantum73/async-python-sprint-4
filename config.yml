@@ -1,5 +1,7 @@
 api:
+  title: "Shortener URLs API"
   prefix: "/api/v1"
+  version: "1.0.0"
   max_batch_size: 10
   black_list_hosts: ["127.0.0.2"]
 db:

@@ -33,7 +33,7 @@ class ShortURLRepository(RepositoryProtocol):
 
     async def get_multi(self, *, skip=0, limit=100) -> tp.Sequence[ModelType]:
         async with self._session_factory() as session:
-            statement = select(ShortURL).offset(skip).limit(limit)
+            statement = select(ShortURL).where(~ShortURL.is_deleted).offset(skip).limit(limit)
             results = await session.execute(statement=statement)
             return results.scalars().all()
 

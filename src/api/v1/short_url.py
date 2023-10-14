@@ -64,8 +64,8 @@ async def get_short_url_status(
 )
 @inject
 async def get_short_urls(
-    offset: tp.Annotated[int, Query()] = 0,
-    max_result: tp.Annotated[int, Query(alias="max-result")] = 10,
+    offset: tp.Annotated[int, Query(ge=0)] = 0,
+    max_result: tp.Annotated[int, Query(alias="max-result", ge=1)] = 10,
     short_url_service: ShortURLService = Depends(Provide[Container.short_url_service]),
 ):
     data = await short_url_service.get_short_urls(offset=offset, limit=max_result)

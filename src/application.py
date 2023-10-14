@@ -9,10 +9,13 @@ from .containers import Container
 def create_app() -> FastAPI:
     container = Container()
     db = container.db()
+    api_title = container.config.get("api.title")
     api_prefix = container.config.get("api.prefix")
+    api_version = container.config.get("api.version")
 
     fastapi_app = FastAPI(
-        title="URL shortener app",
+        title=api_title,
+        version=api_version,
         docs_url="/api/openapi",
         redoc_url=None,
         openapi_url="/api/openapi.json",
