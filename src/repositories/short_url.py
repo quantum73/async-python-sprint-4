@@ -43,7 +43,6 @@ class ShortURLRepository(RepositoryProtocol):
             db_obj = ShortURL(**obj_in_data)
             session.add(db_obj)
             await session.commit()
-            await session.refresh(db_obj)
             return db_obj
 
     async def create_multi(self, *, objects_in: tp.Sequence[CreateSchemaType]) -> tp.Sequence[ModelType]:

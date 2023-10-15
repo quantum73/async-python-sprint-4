@@ -6,9 +6,9 @@ from .base import Base
 class ShortURL(Base):
     __tablename__ = "short_url"
 
-    short_id = Column(String, primary_key=True, unique=True, index=True)
-    short_url = Column(String)
-    original_url = Column(String)
+    short_id = Column(String(length=64), primary_key=True, unique=True, index=True)
+    short_url = Column(String(length=256))
+    original_url = Column(String(length=2056))
     click_count = Column(Integer, default=0)
     last_click_at = Column(DateTime(timezone=True), onupdate=func.now())
     is_deleted = Column(Boolean, default=False)

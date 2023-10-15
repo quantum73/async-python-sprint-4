@@ -1,4 +1,5 @@
 import typing as tp
+import urllib.parse
 
 from dependency_injector.wiring import inject, Provide
 from fastapi import FastAPI, status
@@ -12,21 +13,11 @@ class BlackListMiddleware:
     def __init__(self, app: FastAPI) -> None:
         self._app = app
 
-    @staticmethod
-    def get_hostname_from_string(value: str | bytes) -> str:
-        if isinstance(value, bytes):
-            value = value.decode()
-
-        host = value.lstrip("http://")
-        host = host.lstrip("https://")
-        hostname = host.split(":", maxsplit=1)[0]
-        return hostname
-
     def get_hostname(self, headers: list[tuple[bytes, bytes]]) -> str | None:
         hostname = None
         for header_name, header_value in headers:
             if header_name.decode() == "host":
-                hostname = self.get_hostname_from_string(header_value)
+                hostname = urllib.parse.urlparse(header_value.decode()).hostname
                 break
         return hostname
 
